@@ -18,30 +18,22 @@ class UploadController extends Controller
 {
     public function store(Request $request)
     {
-        if ($request->header("-method") == "DELETE") {
-            $file = TempFile::where('folder', $request->folder)->first();
-            if ($file) {
-                Storage::deleteDirectory($file->folder);
-                $file->delete();
-            }
-        } else {
-            $mimeTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
+        $mimeTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
 
-            if ($request->hasFile('image') && in_array(File::mimeType($request->file('image')), $mimeTypes)) {
-                $file = $request->file('image');
-                $filename = Str::slug(str_replace("'", '', $file->getClientOriginalName()));
-                $folder = 'tmp/' . uniqid() . '-' . now()->timestamp;
-                Storage::putFileAs($folder, $file, $filename);
+        if ($request->hasFile('image') && in_array(File::mimeType($request->file('image')), $mimeTypes)) {
+            $file = $request->file('image');
+            $filename = Str::slug(str_replace("'", '', $file->getClientOriginalName()));
+            $folder = 'tmp/' . uniqid() . '-' . now()->timestamp;
+            Storage::putFileAs($folder, $file, $filename);
 
-                TempFile::create([
-                    'folder' => $folder,
-                    'filename' => $filename,
-                ]);
+            TempFile::create([
+                'folder' => $folder,
+                'filename' => $filename,
+            ]);
 
-                return $folder;
-            }
+            return $folder;
         }
-
+        
         return response('Failed upload', 500);
     }
 

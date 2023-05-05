@@ -35,7 +35,7 @@ class RecipeController extends Controller
 
         return view('recipes.create', compact('allergens', 'categories'));
     }
-    
+
     public function store(StoreRecipeRequest $request): RedirectResponse
     {
         $recipe = Auth::User()->Recipes()->create([
@@ -54,12 +54,12 @@ class RecipeController extends Controller
             $file->delete();
         }
 
-        for($i = 0; $i < count($request['ingredients']); $i++)   {
+        for ($i = 0; $i < count($request['ingredients']); $i++) {
             $recipe->ingredients()->attach($request['ingredients'][$i], ['quantity' => $request['quantities'][$i]]);
         }
 
-        foreach($request['allergens'] as $id => $level)    {
-            if($level != 'no')  {
+        foreach ($request['allergens'] as $id => $level) {
+            if ($level != 'no') {
                 $recipe->allergens()->attach($id, ['level' => $level]);
             }
         }
@@ -86,7 +86,7 @@ class RecipeController extends Controller
         $allergens = $recipe->allergens()->pluck('level', 'allergen_id')->toArray();
         $allAllergens = Allergen::all();
         $categories = Category::all();
-        
+
         return view('recipes.edit', compact('recipe', 'allAllergens', 'allergens', 'categories'));
     }
 
@@ -105,7 +105,7 @@ class RecipeController extends Controller
             $file->delete();
         }
 
-        foreach($request['allergens'] as $id => $level)    {
+        foreach ($request['allergens'] as $id => $level) {
             if ($recipe->allergens->contains($id)) {
                 if ($level != 'no') {
                     $recipe->allergens()->updateExistingPivot($id, [
@@ -126,7 +126,7 @@ class RecipeController extends Controller
     public function destroy(Recipe $recipe): RedirectResponse
     {
         abort_if(Gate::denies('meal_delete'), 403);
-        
+
         $recipe->delete();
 
         return redirect()->back();
@@ -135,7 +135,7 @@ class RecipeController extends Controller
     public function liked(): View
     {
         abort_if(Gate::denies('meal_access'), 403);
-        
+
         $recipes = Auth()->user()->likedRecipes()->with('media', 'ratings')->paginate(15);
 
         return view('recipes.liked', compact('recipes'));
