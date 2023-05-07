@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Crypt;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Symfony\Component\HttpFoundation\Response;
+use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 class UserController extends Controller
 {
@@ -40,7 +41,7 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         abort_if(Gate::denies('user_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        
+
         return view('admin.users.edit', compact('user'));
     }
 
@@ -51,10 +52,17 @@ class UserController extends Controller
         return redirect()->route('admin.users.index');
     }
 
+    // public function update(Request $request, UpdatesUserProfileInformation $updater): RedirectResponse
+    // {
+    //     $updater->update($request->user(), $request->all());
+    // 
+    //     return redirect()->route('admin.users.index');
+    // }
+
     public function destroy(User $user): RedirectResponse
     {
         abort_if(Gate::denies('user_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        
+
         $user->delete();
 
         return redirect()->route('admin.users.index');

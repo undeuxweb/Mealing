@@ -36,6 +36,23 @@ class RecipeController extends Controller
         return view('recipes.create', compact('allergens', 'categories'));
     }
 
+    // ここで、StoreRecipeRequestを使っているのは、バリデーションを行うためです。
+    // StoreRecipeRequestは、app\Http\Requests\StoreRecipeRequest.phpにあります。
+    // StoreRecipeRequestは、FormRequestを継承しています。
+    // FormRequestは、Illuminate\Foundation\Http\FormRequestにあります。
+    // FormRequestは、Illuminate\Http\Requestを継承しています。
+    // Illuminate\Http\Requestは、vendor\laravel\framework\src\Illuminate\Http\Request.phpにあります。
+    // Illuminate\Http\Requestは、Symfony\Component\HttpFoundation\Requestを継承しています。
+    // Symfony\Component\HttpFoundation\Requestは、vendor\symfony\http-foundation\Request.phpにあります。
+    // Symfony\Component\HttpFoundation\Requestは、Symfony\Component\HttpFoundation\RequestStackを継承しています。
+    // Symfony\Component\HttpFoundation\RequestStackは、vendor\symfony\http-foundation\RequestStack.phpにあります。
+    // Symfony\Component\HttpFoundation\RequestStackは、Symfony\Component\HttpFoundation\RequestMatcherInterfaceを継承しています。
+    // Symfony\Component\HttpFoundation\RequestMatcherInterfaceは、vendor\symfony\http-foundation\RequestMatcherInterface.phpにあります。
+    // Symfony\Component\HttpFoundation\RequestMatcherInterfaceは、Symfony\Component\HttpFoundation\RequestMatcherを継承しています。
+    // Symfony\Component\HttpFoundation\RequestMatcherは、vendor\symfony\http-foundation\RequestMatcher.phpにあります。
+    // Symfony\Component\HttpFoundation\RequestMatcherは、Symfony\Component\HttpFoundation\ParameterBagを継承しています。
+    // Symfony\Component\HttpFoundation\ParameterBagは、vendor\symfony\http-foundation\ParameterBag.phpにあります。
+    // Symfony\Component\HttpFoundation\ParameterBagは、Symfony\Component\HttpFoundation\ParameterBagを継承しています。
     public function store(StoreRecipeRequest $request): RedirectResponse
     {
         $recipe = Auth::User()->Recipes()->create([
@@ -81,6 +98,8 @@ class RecipeController extends Controller
     {
         abort_if(Gate::denies('meal_edit'), 403);
 
+        // q: load()は何をしているのか？
+        // a: リレーションをロードしている。リレーションをロードすることで、リレーションのクエリを発行することなく、リレーションを取得することができる。
         $recipe->load('ingredients', 'allergens');
 
         $allergens = $recipe->allergens()->pluck('level', 'allergen_id')->toArray();
@@ -119,6 +138,17 @@ class RecipeController extends Controller
                 $recipe->allergens()->attach($allergen, ['level' => $level]);
             }
         }
+
+        // syncでこのような配列にする
+        // $recipe->ingredients()->sync([
+            // 1 => ['quantity' => 100],
+            // 2 => ['quantity' => 200],
+        // ]);
+        $ingredients = array();
+        foreach ($request['ingredients'] as $i => $ingredient) {
+            $ingredients[$ingredient] = ['quantity' => $request['quantities'][$i]];
+        }
+        $recipe->ingredients()->sync($ingredients);
 
         return redirect($recipe->path());
     }
